@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>100PLUSSHOP — Installation admin</title>
+  <meta name="theme-color" content="#FF2D7B" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="100PLUSSHOP" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="left-panel">
+      <div class="logo">
+        <img src="logo_100plus.jpg.jpeg" alt="100PLUSSHOP" onerror="this.style.display='none'">
+      </div>
+      <div class="content">
+        <div class="badge"><span class="dot"></span> INSTALLATION SÉCURISÉE</div>
+        <h1>Créer le compte administrateur</h1>
+        <p>
+          Cette page est réservée à l’installation initiale.
+          Elle nécessite le <strong>code secret</strong> fourni avec votre licence.
+          Une fois le premier admin créé, cette inscription se ferme automatiquement.
+        </p>
+      </div>
+    </div>
+    <div class="right-panel">
+      <form id="adminSetupForm" class="login-card" novalidate>
+        <div class="field">
+          <label for="setupToken">Code d’installation *</label>
+          <div class="input-wrapper">
+            <input type="password" id="setupToken" name="setupToken" required autocomplete="off" placeholder="Collez le code secret" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="nom">Nom *</label>
+          <div class="input-wrapper">
+            <input type="text" id="nom" required autocomplete="family-name" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="prenom">Prénom *</label>
+          <div class="input-wrapper">
+            <input type="text" id="prenom" required autocomplete="given-name" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="email">E-mail *</label>
+          <div class="input-wrapper">
+            <input type="email" id="email" required autocomplete="email" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="password">Mot de passe * (min. 8)</label>
+          <div class="input-wrapper">
+            <input type="password" id="password" required minlength="8" autocomplete="new-password" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="passwordConfirm">Confirmer *</label>
+          <div class="input-wrapper">
+            <input type="password" id="passwordConfirm" required minlength="8" autocomplete="new-password" />
+          </div>
+        </div>
+        <div id="message" class="message" role="alert"></div>
+        <button type="submit" class="login-btn" id="submitBtn">Créer l’administrateur</button>
+        <p style="margin-top:16px;font-size:13px;text-align:center;">
+          <a href="index.html">Retour à la connexion</a>
+        </p>
+      </form>
+    </div>
+  </div>
+  <script src="script-inscription-admin.js"></script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./sw.js').then(function (reg) {
+          console.log('[PWA] SW enregistré', reg.scope);
+          reg.addEventListener('updatefound', function () {
+            var nw = reg.installing;
+            if (!nw) return;
+            nw.addEventListener('statechange', function () {
+              if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('[PWA] Nouvelle version disponible — rechargez la page');
+              }
+            });
+          });
+        }).catch(function (err) {
+          console.warn('[PWA] SW échec', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
