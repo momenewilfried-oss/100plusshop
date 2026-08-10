@@ -5,7 +5,7 @@ const API_BASE_URL = (function () {
   if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
     return location.origin + '/api';
   }
-  return 'http://localhost:3000/api';
+  return 'https://100plusshop-backend-pied.vercel.app/api';
 })();
 
 const form = document.getElementById('loginForm');
@@ -92,7 +92,7 @@ form?.addEventListener('submit', async (e) => {
   } catch (err) {
     console.error(err);
     showMessage(
-      'Impossible de joindre le serveur. Vérifiez que le backend tourne sur http://localhost:3000',
+      'Impossible de joindre le serveur. ',
       'error'
     );
   } finally {
