@@ -275,9 +275,11 @@ const AuditAPI = {
     const q = new URLSearchParams();
     if (params.module) q.set('module', params.module);
     if (params.action) q.set('action', params.action);
-    if (params.limit) q.set('limit', params.limit);
+    if (params.limit != null) q.set('limit', params.limit);
+    if (params.page != null) q.set('page', params.page);
+    if (params.offset != null) q.set('offset', params.offset);
     const s = q.toString();
-    return api(`/audit${s ? '?' + s : ''}`.replace(' /', '/'));
+    return api('/audit' + (s ? '?' + s : ''));
   },
 };
 

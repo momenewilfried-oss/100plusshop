@@ -284,20 +284,23 @@ async function renderPOS(el) {
             remise: remise || 0,
           })),
         });
-        alert(`Vente #${vente.id_vente} enregistrée — ${formatMontant(vente.montant_total)}`);
+        const idVente = Number(vente.id_vente || vente.id);
+        alert(`Vente #${idVente} enregistrée — ${formatMontant(vente.montant_total)}`);
 
-        // Créer la facture immédiatement avec le statut "Payée" et déclencher le téléchargement PDF
+        // Facture : déjà créée par le backend si possible, sinon création front + PDF
         try {
-          const facture = await FacturesAPI.create({ idVente: Number(vente.id_vente), statut: 'Payée' });
-          if (facture && (facture.statut === 'Payée' || facture.statut === 'payée' || facture.statut === 'Paye' || facture.statut === 'Payer')) {
-            // utilisation de l'identifiant attendu `id_facture` sinon fallback
-            const idFact = facture.id_facture || facture.id || facture.idFacture || facture.id_facture;
-            if (idFact) {
-              await FacturesAPI.pdf(idFact);
-            }
+          let facture = vente.facture || null;
+          if (!facture && idVente) {
+            facture = await FacturesAPI.create({ idVente, statut: 'Payée' });
+          }
+          const idFact = facture && (facture.id_facture || facture.id || facture.idFacture);
+          if (idFact) {
+            await FacturesAPI.pdf(idFact);
+          } else {
+            console.warn('Facture sans id', facture);
+            alert('Vente enregistrée. Facture non disponible pour le PDF.');
           }
         } catch (e) {
-          // Ne bloque pas le flux de vente si la création ou le PDF échoue
           console.warn('Erreur création/téléchargement facture', e);
           alert('Vente enregistrée mais la création/téléchargement de la facture a échoué : ' + e.message);
         }
