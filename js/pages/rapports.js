@@ -28,7 +28,7 @@ async function renderRapports(el) {
       body.innerHTML = `
         <div class="cards-row">
           <div class="stat-card">
-            <div class="label">Recettes</div>
+            <div class="label">CA ventes (période)</div>
             <div class="value" style="color:var(--success)">${formatMontant(data.recettes)}</div>
           </div>
           <div class="stat-card">

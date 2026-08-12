@@ -36,8 +36,11 @@ function buildFacturesShell(el) {
     '<div class="stat-card"><div class="label">Total factures</div><div class="value">' +
     (r.total_factures != null ? r.total_factures : facturesCache.length) +
     '</div></div>' +
-    '<div class="stat-card"><div class="label">Recettes payées (mois)</div><div class="value" style="color:var(--success)">' +
-    formatMontant(r.recettes_payees_mois) +
+    '<div class="stat-card"><div class="label">CA ventes (mois)</div><div class="value" style="color:var(--success)">' +
+    formatMontant(r.ca_ventes_mois != null ? r.ca_ventes_mois : r.recettes_payees_mois) +
+    '</div></div>' +
+    '<div class="stat-card"><div class="label">Factures payées (mois)</div><div class="value">' +
+    formatMontant(r.factures_payees_mois != null ? r.factures_payees_mois : 0) +
     '</div></div>' +
     '<div class="stat-card"><div class="label">En attente</div><div class="value">' +
     formatMontant(r.en_attente) +
