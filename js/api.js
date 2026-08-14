@@ -155,11 +155,13 @@ const ProduitsAPI = {
 const MarquesAPI = {
   list: () => api('/marques'),
   create: (body) => api('/marques', { method: 'POST', body: JSON.stringify(body) }),
+  remove: (id) => api('/marques/' + id, { method: 'DELETE' }),
 };
 
 const CategoriesAPI = {
   list: () => api('/categories'),
   create: (body) => api('/categories', { method: 'POST', body: JSON.stringify(body) }),
+  remove: (id) => api('/categories/' + id, { method: 'DELETE' }),
 };
 
 
