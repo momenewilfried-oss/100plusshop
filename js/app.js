@@ -21,12 +21,12 @@ document.getElementById('btnLogout').addEventListener('click', (e) => {
 /* ===== Menus autorisés par rôle ===== */
 const MENUS_PAR_ROLE = {
   administrateur: [
-    'dashboard', 'produits', 'pos', 'ventes', 'clients', 'stocks',
+    'dashboard', 'produits', 'marques', 'categories', 'pos', 'ventes', 'clients', 'stocks',
     'factures', 'depenses', 'rapports', 'fournisseurs', 'achats',
     'promotions', 'utilisateurs', 'journal', 'corbeille',
   ],
   gerant: [
-    'dashboard', 'produits', 'pos', 'ventes', 'clients', 'stocks',
+    'dashboard', 'produits', 'marques', 'categories', 'pos', 'ventes', 'clients', 'stocks',
     'factures', 'depenses', 'rapports', 'fournisseurs', 'achats',
     'promotions',
   ],
@@ -113,6 +113,8 @@ window.addEventListener('resize', () => {
 const pages = {
   dashboard: renderDashboard,
   produits: renderProduits,
+  marques: renderMarques,
+  categories: renderCategories,
   ventes: renderVentes,
   clients: renderClients,
   stocks: renderStocks,
@@ -131,6 +133,8 @@ const pages = {
 const titles = {
   dashboard: 'Tableau de bord',
   produits: 'Produits',
+  marques: 'Marques',
+  categories: 'Catégories',
   ventes: 'Historique des ventes',
   clients: 'Clients',
   stocks: 'Stocks',
