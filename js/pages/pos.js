@@ -108,12 +108,17 @@ async function renderPOS(el) {
 
           <div class="form-grid" style="margin-top:16px;">
             <div>
-              <label>Client</label>
-              <input type="search" id="posClientSearch" placeholder="Rechercher client…"
+              <label>Client enregistré (optionnel)</label>
+              <input type="search" id="posClientSearch" placeholder="Rechercher un client en base…"
                 style="width:100%;margin-bottom:6px;height:32px;padding:0 8px;border:1px solid var(--border);border-radius:6px;" />
               <select id="posClient">
                 ${clientOptionsHtml()}
               </select>
+              <label style="margin-top:8px;display:block">Ou nom libre (sans fiche client)</label>
+              <input type="text" id="posClientLibre" placeholder="Ex. Jean Dupont — non enregistré"
+                maxlength="200"
+                style="width:100%;margin-top:4px;height:32px;padding:0 8px;border:1px solid var(--border);border-radius:6px;" />
+              <div style="font-size:11px;color:var(--muted,#888);margin-top:4px">Si vous choisissez un client en liste, le nom libre est ignoré. Aucune fiche client n'est créée.</div>
             </div>
             <div>
               <label>Paiement</label>
@@ -223,6 +228,9 @@ async function renderPOS(el) {
     selectedClient = document.getElementById('posClient')?.value || '';
     document.getElementById('posClient')?.addEventListener('change', (e) => {
       selectedClient = e.target.value;
+      if (selectedClient && document.getElementById('posClientLibre')) {
+        document.getElementById('posClientLibre').value = '';
+      }
     });
 
     document.getElementById('posClientSearch')?.addEventListener('input', (e) => {
@@ -273,8 +281,10 @@ async function renderPOS(el) {
       if (!panier.length) return;
       try {
         const idClient = document.getElementById('posClient').value;
+        const clientLibre = (document.getElementById('posClientLibre')?.value || '').trim();
         const vente = await VentesAPI.create({
           idClient: idClient ? Number(idClient) : null,
+          clientLibre: idClient ? null : (clientLibre || null),
           remiseGlobale: 0,
           modePaiementPrincipal: document.getElementById('posPay').value,
           lignes: panier.map(({ idVariante, quantite, prixUnitaire, remise }) => ({
