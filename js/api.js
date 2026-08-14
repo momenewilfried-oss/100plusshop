@@ -152,6 +152,17 @@ const ProduitsAPI = {
     }),
 };
 
+const MarquesAPI = {
+  list: () => api('/marques'),
+  create: (body) => api('/marques', { method: 'POST', body: JSON.stringify(body) }),
+};
+
+const CategoriesAPI = {
+  list: () => api('/categories'),
+  create: (body) => api('/categories', { method: 'POST', body: JSON.stringify(body) }),
+};
+
+
 const VentesAPI = {
   list: () => api('/ventes'),
   get: (id) => api(`/ventes/${id}`),
