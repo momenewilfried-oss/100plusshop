@@ -148,16 +148,34 @@ async function renderStocks(el, page = 1) {
   });
 
   document.getElementById('btnMouv')?.addEventListener('click', async () => {
+    const btn = document.getElementById('btnMouv');
+    if (btn && btn.dataset.busy === '1') return;
+    if (btn) {
+      btn.dataset.busy = '1';
+      btn.disabled = true;
+    }
+    const idempotencyKey =
+      (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : 'stk-' + Date.now() + '-' + Math.random().toString(36).slice(2);
     try {
       await StocksAPI.createMouvement({
         idVariante: Number(document.getElementById('mVar').value),
         typeMouvement: document.getElementById('mType').value,
         quantite: Number(document.getElementById('mQte').value),
         motif: document.getElementById('mMotif').value,
+        idempotencyKey,
       });
-      renderStocks(el, 1); // retour page 1 après nouvel enregistrement
+      renderStocks(el, 1);
     } catch (e) {
       alert(e.message);
+    } finally {
+      setTimeout(() => {
+        if (btn) {
+          btn.dataset.busy = '0';
+          btn.disabled = false;
+        }
+      }, 2000);
     }
   });
 
