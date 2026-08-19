@@ -51,6 +51,7 @@ async function renderProduits(el) {
 
   const role = (getUser()?.role || '').toLowerCase();
   const peutEcrire = role === 'administrateur' || role === 'gerant';
+  const peutSupprimer = role === 'administrateur';
 
   el.innerHTML = `
     <div class="toolbar">
@@ -181,6 +182,7 @@ async function renderProduits(el) {
                       Modifier
                     </button>
                     <button class="btn btn-sm" data-var="${p.id_produit}" data-nom="${(p.nom || '').replace(/"/g, '')}">+ Variante</button>
+                    ${peutSupprimer ? `<button class="btn btn-sm" style="color:var(--danger)" data-del-prod="${p.id_produit}" data-nom="${(p.nom || '').replace(/"/g, '')}">Supprimer</button>` : ''}
                   </td>` : ''}
                 </tr>`).join('')}
             </tbody>
@@ -355,6 +357,21 @@ document.getElementById('btnRefreshProd')?.addEventListener('click', () => rende
       document.getElementById('varFormPanel').style.display = 'block';
       document.getElementById('prodFormPanel').style.display = 'none';
       document.getElementById('varFormPanel').scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  el.querySelectorAll('[data-del-prod]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.delProd;
+      const nom = btn.dataset.nom || id;
+      if (!confirm('Supprimer le produit « ' + nom + ' » ?\nIl sera déplacé dans la Corbeille (restauration possible).')) return;
+      try {
+        await ProduitsAPI.remove(id);
+        alert('Produit déplacé vers la corbeille');
+        renderProduits(el);
+      } catch (e) {
+        alert(e.message || String(e));
+      }
     });
   });
 
