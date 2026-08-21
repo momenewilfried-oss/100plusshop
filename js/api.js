@@ -24,7 +24,6 @@ function formatMontant(valeur) {
   return nombre.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) + ' FCFA';
 }
 
-
 /** Échappe le HTML pour éviter les XSS lors des injections innerHTML */
 function escapeHtml(value) {
   return String(value ?? '')
@@ -39,7 +38,6 @@ function escapeHtml(value) {
 function escapeAttr(value) {
   return escapeHtml(value).replace(/`/g, '&#96;');
 }
-
 
 function getToken() {
   return localStorage.getItem('100plusshop_token') || sessionStorage.getItem('100plusshop_token');
@@ -80,7 +78,6 @@ async function api(path, options = {}) {
     Accept: 'application/json',
     ...(options.headers || {}),
   };
-
   const token = getToken();
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
@@ -89,7 +86,7 @@ async function api(path, options = {}) {
     headers,
   });
 
-  // PDF download
+  // PDF / fichier binaire
   if (options.blob) {
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -109,15 +106,12 @@ async function api(path, options = {}) {
     }
     throw new Error(data.message || 'Session expirée');
   }
-
   if (res.status === 403) {
     throw new Error(data.message || 'Accès refusé pour ce rôle');
   }
-
   if (!res.ok) {
     throw new Error(data.message || data.erreur || `Erreur ${res.status}`);
   }
-
   return data;
 }
 
@@ -164,7 +158,6 @@ const CategoriesAPI = {
   remove: (id) => api('/categories/' + id, { method: 'DELETE' }),
 };
 
-
 const VentesAPI = {
   list: () => api('/ventes'),
   get: (id) => api(`/ventes/${id}`),
@@ -202,14 +195,82 @@ const FacturesAPI = {
   create: (body) => api('/factures', { method: 'POST', body: JSON.stringify(body) }),
   setStatut: (id, statut) =>
     api(`/factures/${id}/statut`, { method: 'PATCH', body: JSON.stringify({ statut }) }),
+
+  /**
+   * Télécharge le PDF puis propose l'impression.
+   * Si l'utilisateur accepte, ouvre le dialogue d'impression système
+   * (imprimantes détectées par Windows / le navigateur).
+   */
   pdf: async (id) => {
     const blob = await api(`/factures/${id}/pdf`, { blob: true });
     const url = URL.createObjectURL(blob);
+
+    // 1) Téléchargement
     const a = document.createElement('a');
     a.href = url;
     a.download = `facture-${id}.pdf`;
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
+    a.remove();
+
+    // 2) Demande d'impression
+    const veutImprimer = window.confirm(
+      'Facture téléchargée.\n\nVoulez-vous imprimer la facture maintenant ?'
+    );
+    if (!veutImprimer) {
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      return;
+    }
+
+    // 3) Impression (dialogue système = liste des imprimantes disponibles)
+    try {
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText =
+        'position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0;pointer-events:none;';
+      iframe.src = url;
+      document.body.appendChild(iframe);
+
+      let printed = false;
+      const doPrint = () => {
+        if (printed) return;
+        printed = true;
+        try {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+        } catch (err) {
+          const w = window.open(url, '_blank');
+          if (w) {
+            w.addEventListener('load', () => {
+              try {
+                w.print();
+              } catch (_) {}
+            });
+          } else {
+            alert(
+              'Impossible d’ouvrir l’impression automatiquement.\n' +
+                'Autorisez les pop-ups ou ouvrez le PDF téléchargé et imprimez (Ctrl+P).'
+            );
+          }
+        }
+        setTimeout(() => {
+          try {
+            iframe.remove();
+          } catch (_) {}
+          URL.revokeObjectURL(url);
+        }, 120000);
+      };
+
+      iframe.onload = doPrint;
+      setTimeout(doPrint, 800);
+    } catch (e) {
+      alert(
+        'Impression impossible depuis le navigateur.\n' +
+          'Ouvrez le fichier facture-' +
+          id +
+          '.pdf téléchargé et utilisez Ctrl+P.'
+      );
+      URL.revokeObjectURL(url);
+    }
   },
 };
 
@@ -221,7 +282,6 @@ const UtilisateursAPI = {
   update: (id, body) => api(`/utilisateurs/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   remove: (id) => api(`/utilisateurs/${id}`, { method: 'DELETE' }),
 };
-
 
 const DepensesAPI = {
   list: (params = {}) => {
@@ -246,10 +306,9 @@ const RapportsAPI = {
     if (debut) q.set('debut', debut);
     if (fin) q.set('fin', fin);
     const token = getToken();
-    const res = await fetch(
-      `${API_BASE}/rapports/comptable/export?${q}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    const res = await fetch(`${API_BASE}/rapports/comptable/export?${q}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     if (!res.ok) throw new Error('Export impossible');
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
@@ -260,6 +319,7 @@ const RapportsAPI = {
     URL.revokeObjectURL(url);
   },
 };
+
 const FournisseursAPI = {
   list: () => api('/fournisseurs'),
   get: (id) => api(`/fournisseurs/${id}`),
