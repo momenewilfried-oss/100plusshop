@@ -123,8 +123,8 @@ async function renderPOS(el) {
             <div>
               <label>Paiement</label>
               <select id="posPay">
-                <option value="carte">Carte</option>
-                <option value="especes">Espèces</option>
+                <option value="carte">Espèces</option>
+                <option value="especes">carte</option>
                 <option value="virement">Virement</option>
               </select>
             </div>
