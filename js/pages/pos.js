@@ -115,7 +115,7 @@ async function renderPOS(el) {
                 ${clientOptionsHtml()}
               </select>
               <label style="margin-top:8px;display:block">Ou nom libre (sans fiche client)</label>
-              <input type="text" id="posClientLibre" placeholder="Ex. Jean Dupont — non enregistré"
+              <input type="text" id="posClientLibre" placeholder="Nom du client (non enregistré)"
                 maxlength="200"
                 style="width:100%;margin-top:4px;height:32px;padding:0 8px;border:1px solid var(--border);border-radius:6px;" />
               <div style="font-size:11px;color:var(--muted,#888);margin-top:4px">Si vous choisissez un client en liste, le nom libre est ignoré. Aucune fiche client n'est créée.</div>
