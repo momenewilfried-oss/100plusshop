@@ -303,7 +303,7 @@ body.sidebar-collapsed .sidebar {
   background: var(--card);
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  padding: 16px;
+  padding: 46px;
   margin-bottom: 14px;
   width: 100%;
   max-width: 100%;
