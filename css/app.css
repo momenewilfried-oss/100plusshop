@@ -303,27 +303,26 @@ body.sidebar-collapsed .sidebar {
   background: var(--card);
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  padding: 46px;
+  padding: 16px;
   margin-bottom: 14px;
   width: 100%;
   max-width: 100%;
-  min-width: 50%;
-  display: down;
+  min-width: 0;
 }
 
 .panel-title {
-  font-size: 55px;
-  font-weight: 1000;
-  margin-bottom: 32px;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 12px;
 }
 
 .panel-header {
-  display: down;
+  display: flex;
   justify-content: space-between;
-  align-items: left;
+  align-items: center;
   gap: 10px;
   margin-bottom: 12px;
-  flex-wrap: ;
+  flex-wrap: wrap;
 }
 
 .grid-2 {
