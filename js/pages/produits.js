@@ -139,7 +139,7 @@ async function renderProduits(el) {
         <div><label>Prix achat</label><input id="nvPrixA" type="number" step="0.01" /></div>
         <div><label>Seuil alerte</label><input id="nvSeuil" type="number" value="5" /></div>
       </div>
-      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <div style="pagging-top:12px;display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-primary" id="btnSaveVar">Ajouter la variante</button>
         <button class="btn" id="btnCancelVar">Annuler</button>
       </div>
