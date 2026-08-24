@@ -323,7 +323,7 @@ body.sidebar-collapsed .sidebar {
   align-items: left;
   gap: 10px;
   margin-bottom: 12px;
-  flex-wrap: wrap;
+  flex-wrap: ;
 }
 
 .grid-2 {
