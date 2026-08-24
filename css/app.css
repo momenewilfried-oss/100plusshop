@@ -308,6 +308,7 @@ body.sidebar-collapsed .sidebar {
   width: 100%;
   max-width: 100%;
   min-width: 50%;
+  display: down;
 }
 
 .panel-title {
