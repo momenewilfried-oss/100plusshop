@@ -317,9 +317,9 @@ body.sidebar-collapsed .sidebar {
 }
 
 .panel-header {
-  display: flex;
+  display: down;
   justify-content: space-between;
-  align-items: center;
+  align-items: left;
   gap: 10px;
   margin-bottom: 12px;
   flex-wrap: wrap;
