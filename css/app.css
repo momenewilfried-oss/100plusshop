@@ -307,7 +307,7 @@ body.sidebar-collapsed .sidebar {
   margin-bottom: 14px;
   width: 100%;
   max-width: 100%;
-  min-width: 0;
+  min-width: 50%;
 }
 
 .panel-title {
