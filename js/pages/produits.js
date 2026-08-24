@@ -128,7 +128,7 @@ async function renderProduits(el) {
       </div>
     </div>
 
-    <div class="panel" id="varFormPanel" style="display:down">
+    <div class="panel" id="varFormPanel" style="display:flex">
       <div class="panel-title">Ajouter une variante — <span id="varProdName"></span></div>
       <input type="hidden" id="varProdId" />
       <div class="form-grid">
