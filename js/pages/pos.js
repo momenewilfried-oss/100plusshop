@@ -205,8 +205,87 @@ async function renderPOS(el) {
       '<button class="btn" id="posModalClose" style="margin-top:12px;width:100%;">Fermer</button>' +
       '</div></div>';
 
+<<<<<<< HEAD
     // Recherche catalogue
     document.getElementById('posSearch')?.addEventListener('input', function (e) {
+=======
+        <!-- Panier -->
+        <div class="panel">
+          <div class="panel-title">Panier</div>
+          ${panier.length === 0
+            ? '<div class="empty">Panier vide</div>'
+            : `
+              <table class="data">
+                <thead><tr><th>Article</th><th>Qté</th><th>P.U.</th><th>Total</th><th></th></tr></thead>
+                <tbody>
+                  ${panier.map((l, i) => `
+                    <tr>
+                      <td>
+                        <strong>${l.nom}</strong><br>
+                        <span style="font-size:11px;color:var(--muted)">${l.taille || ''} ${l.couleur || ''}</span>
+                      </td>
+                      <td>
+                        <input type="number" min="1" value="${l.quantite}" data-qte="${i}"
+                          style="width:56px;height:28px;padding:0 6px;border:1px solid var(--border);border-radius:6px;" />
+                      </td>
+                      <td>${formatMontant(l.prixUnitaire)}</td>
+                      <td><strong>${formatMontant(l.prixUnitaire * l.quantite)}</strong></td>
+                      <td><button class="btn btn-sm" data-rm="${i}">✕</button></td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+              <div style="margin-top:16px;text-align:right;">
+                <div style="font-size:13px;color:var(--muted);">Total</div>
+                <div style="font-size:24px;font-weight:700;color:var(--primary);">${formatMontant(total)}</div>
+              </div>
+            `}
+
+          <div class="form-grid" style="margin-top:16px;">
+            <div>
+              <label>Client enregistré (optionnel)</label>
+              <input type="search" id="posClientSearch" placeholder="Rechercher un client en base…"
+                style="width:100%;margin-bottom:6px;height:32px;padding:0 8px;border:1px solid var(--border);border-radius:6px;" />
+              <select id="posClient">
+                ${clientOptionsHtml()}
+              </select>
+              <label style="margin-top:8px;display:block">Ou nom libre (sans fiche client)</label>
+              <input type="text" id="posClientLibre" placeholder="Nom du client (non enregistré)"
+                maxlength="200"
+                style="width:100%;margin-top:4px;height:32px;padding:0 8px;border:1px solid var(--border);border-radius:6px;" />
+              <div style="font-size:11px;color:var(--muted,#888);margin-top:4px">Si vous choisissez un client en liste, le nom libre est ignoré. Aucune fiche client n'est créée.</div>
+            </div>
+            <div>
+              <label>Paiement</label>
+              <select id="posPay">
+                <option value="carte">Espèces</option>
+                <option value="especes">carte</option>
+                <option value="virement">Virement</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" id="btnPayer"
+            style="width:100%;margin-top:14px;height:44px;"
+            ${panier.length === 0 ? 'disabled' : ''}>
+            Valider la vente · ${formatMontant(total)}
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal variantes -->
+      <div id="posModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:center;justify-content:center;">
+        <div class="panel" style="width:min(420px,92vw);margin:0;">
+          <div class="panel-title" id="posModalTitle">Choisir une variante</div>
+          <div id="posModalBody"></div>
+          <button class="btn" id="posModalClose" style="margin-top:12px;width:100%;">Fermer</button>
+        </div>
+      </div>
+    `;
+
+    // Recherche
+    document.getElementById('posSearch')?.addEventListener('input', (e) => {
+>>>>>>> 7c9d518de012eceebf3afaa352155cfeb6bf6493
       const q = e.target.value.toLowerCase();
       document.querySelectorAll('#posCatalogue [data-search]').forEach(function (row) {
         row.style.display = row.dataset.search.indexOf(q) !== -1 ? '' : 'none';
@@ -363,12 +442,20 @@ async function renderPOS(el) {
       const idempotencyKey = newIdempotencyKey();
 
       try {
+<<<<<<< HEAD
         const idClient = document.getElementById('posClient')?.value;
         const clientLibre = (document.getElementById('posClientLibre')?.value || '').trim();
 
         const vente = await VentesAPI.create({
           idClient: idClient ? Number(idClient) : null,
           clientLibre: idClient ? null : clientLibre || null,
+=======
+        const idClient = document.getElementById('posClient').value;
+        const clientLibre = (document.getElementById('posClientLibre')?.value || '').trim();
+        const vente = await VentesAPI.create({
+          idClient: idClient ? Number(idClient) : null,
+          clientLibre: idClient ? null : (clientLibre || null),
+>>>>>>> 7c9d518de012eceebf3afaa352155cfeb6bf6493
           remiseGlobale: 0,
           modePaiementPrincipal: document.getElementById('posPay')?.value || 'especes',
           idempotencyKey: idempotencyKey,
