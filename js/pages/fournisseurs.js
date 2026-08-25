@@ -19,7 +19,6 @@ async function renderFournisseurs(el) {
         <div><label>Nom</label><input id="fNom" /></div>
         <div><label>Contact</label><input id="fContact" /></div>
         <div><label>Email</label><input id="fEmail" type="email" /></div>
-        <div><label>Téléphone</label><input id="fTel" /></div>
         <div style="grid-column:1/-1"><label>Adresse</label><input id="fAdresse" /></div>
       </div>
       <div style="margin-top:12px;display:flex;gap:8px">
@@ -34,7 +33,7 @@ async function renderFournisseurs(el) {
         : `<table class="data">
             <thead>
               <tr>
-                <th>ID</th><th>Nom</th><th>Email</th><th>Téléphone</th><th>Adresse</th><th></th>
+                <th>ID</th><th>Nom</th><th>Contact</th><th>Email</th><th>Adresse</th><th></th>
               </tr>
             </thead>
             <tbody>
@@ -42,8 +41,8 @@ async function renderFournisseurs(el) {
                 <tr>
                   <td>${f.id_fournisseur}</td>
                   <td><strong>${escapeHtml(f.nom || '')}</strong></td>
+                  <td>${escapeHtml(f.contact || '-')}</td>
                   <td>${escapeHtml(f.email || '-')}</td>
-                  <td>${escapeHtml(f.telephone || '-')}</td>
                   <td>${escapeHtml(f.adresse || '-')}</td>
                   <td>
                     <button type="button" class="btn btn-sm" data-del-four="${f.id_fournisseur}" title="Supprimer">
@@ -63,18 +62,24 @@ async function renderFournisseurs(el) {
   document.getElementById('btnCancelFour')?.addEventListener('click', () => {
     document.getElementById('fourForm').style.display = 'none';
   });
+
   document.getElementById('btnSaveFour')?.addEventListener('click', async () => {
     try {
+      const nom = document.getElementById('fNom').value.trim();
+      if (!nom) {
+        alert('Le nom du fournisseur est obligatoire');
+        return;
+      }
       await FournisseursAPI.create({
-        nom: document.getElementById('fNom').value.trim(),
+        nom,
         contact: document.getElementById('fContact').value.trim() || null,
         email: document.getElementById('fEmail').value.trim() || null,
-        telephone: document.getElementById('fTel').value.trim() || null,
+        telephone: null,
         adresse: document.getElementById('fAdresse').value.trim() || null,
       });
       renderFournisseurs(el);
     } catch (e) {
-      alert(e.message);
+      alert(e.message || String(e));
     }
   });
 
@@ -86,7 +91,7 @@ async function renderFournisseurs(el) {
         await FournisseursAPI.remove(id);
         renderFournisseurs(el);
       } catch (e) {
-        alert(e.message || 'Suppression impossible');
+        alert(e.message || String(e));
       }
     });
   });

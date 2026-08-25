@@ -1,3 +1,45 @@
+async function loadMarqueCategorieSelects(selectedMarque, selectedCat) {
+  const selM = document.getElementById('pMarque');
+  const selC = document.getElementById('pCat');
+  if (!selM || !selC) return;
+  let marques = [];
+  let cats = [];
+  try {
+    marques = await MarquesAPI.list();
+    if (!Array.isArray(marques)) marques = [];
+  } catch (_) {
+    marques = [];
+  }
+  try {
+    cats = await CategoriesAPI.list();
+    if (!Array.isArray(cats)) cats = [];
+  } catch (_) {
+    cats = [];
+  }
+  const sm = selectedMarque != null ? String(selectedMarque) : '';
+  const sc = selectedCat != null ? String(selectedCat) : '';
+  selM.innerHTML =
+    '<option value="">— Choisir —</option>' +
+    marques
+      .map(
+        (m) =>
+          `<option value="${m.id_marque}" ${String(m.id_marque) === sm ? 'selected' : ''}>${escapeHtml(
+            m.nom || ''
+          )}</option>`
+      )
+      .join('');
+  selC.innerHTML =
+    '<option value="">— Choisir —</option>' +
+    cats
+      .map(
+        (c) =>
+          `<option value="${c.id_categorie}" ${String(c.id_categorie) === sc ? 'selected' : ''}>${escapeHtml(
+            c.nom || ''
+          )}</option>`
+      )
+      .join('');
+}
+
 async function renderProduits(el) {
   let produits = [];
   try {
@@ -9,12 +51,37 @@ async function renderProduits(el) {
 
   const role = (getUser()?.role || '').toLowerCase();
   const peutEcrire = role === 'administrateur' || role === 'gerant';
+  const peutSupprimer = role === 'administrateur';
 
   el.innerHTML = `
     <div class="toolbar">
       <input type="search" id="prodSearch" placeholder="Rechercher un produit…" style="flex:1;min-width:140px;max-width:280px" />
       ${peutEcrire ? '<button class="btn btn-primary" id="btnNewProd">+ Produit</button>' : ''}
       <button class="btn" id="btnRefreshProd">Actualiser</button>
+    </div>
+
+    
+    <div class="panel" id="marqueQuickPanel" style="display:none">
+      <div class="panel-title">Nouvelle marque</div>
+      <div class="form-grid">
+        <div><label>Nom *</label><input id="mNom" placeholder="Ex. Nike" /></div>
+        <div><label>Description</label><input id="mDesc" /></div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button type="button" class="btn btn-primary" id="btnSaveMarque">Enregistrer marque</button>
+        <button type="button" class="btn" id="btnCancelMarque">Annuler</button>
+      </div>
+    </div>
+    <div class="panel" id="catQuickPanel" style="display:none">
+      <div class="panel-title">Nouvelle catégorie</div>
+      <div class="form-grid">
+        <div><label>Nom *</label><input id="cNom" placeholder="Ex. Robes" /></div>
+        <div><label>Description</label><input id="cDesc" /></div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button type="button" class="btn btn-primary" id="btnSaveCat">Enregistrer catégorie</button>
+        <button type="button" class="btn" id="btnCancelCat">Annuler</button>
+      </div>
     </div>
 
     <div class="panel" id="prodFormPanel" style="display:none">
@@ -25,8 +92,20 @@ async function renderProduits(el) {
         <div><label>Nom *</label><input id="pNom" placeholder="Robe Été" /></div>
         <div><label>Prix vente *</label><input id="pPrixV" type="number" min="0" step="0.01" /></div>
         <div><label>Prix achat</label><input id="pPrixA" type="number" min="0" step="0.01" /></div>
-        <div><label>ID Marque</label><input id="pMarque" type="number" value="1" /></div>
-        <div><label>ID Catégorie</label><input id="pCat" type="number" value="1" /></div>
+        <div>
+          <label>Marque</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <select id="pMarque" style="flex:1"><option value="">— Choisir —</option></select>
+            <button type="button" class="btn btn-sm" id="btnAddMarque" title="Nouvelle marque">+</button>
+          </div>
+        </div>
+        <div>
+          <label>Catégorie</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <select id="pCat" style="flex:1"><option value="">— Choisir —</option></select>
+            <button type="button" class="btn btn-sm" id="btnAddCat" title="Nouvelle catégorie">+</button>
+          </div>
+        </div>
         <div><label>ID Fournisseur</label><input id="pFour" type="number" value="1" /></div>
         <div><label>Seuil alerte</label><input id="pSeuil" type="number" value="5" /></div>
         <div><label>Matière</label><input id="pMat" /></div>
@@ -46,23 +125,6 @@ async function renderProduits(el) {
       <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-primary" id="btnSaveProd">Enregistrer</button>
         <button class="btn" id="btnCancelProd">Annuler</button>
-      </div>
-    </div>
-
-    <div class="panel" id="varFormPanel" style="display:none">
-      <div class="panel-title">Ajouter une variante — <span id="varProdName"></span></div>
-      <input type="hidden" id="varProdId" />
-      <div class="form-grid">
-        <div><label>Taille</label><input id="nvTaille" placeholder="L" /></div>
-        <div><label>Couleur</label><input id="nvCouleur" placeholder="Noir" /></div>
-        <div><label>Stock</label><input id="nvStock" type="number" value="0" /></div>
-        <div><label>Prix vente</label><input id="nvPrixV" type="number" step="0.01" /></div>
-        <div><label>Prix achat</label><input id="nvPrixA" type="number" step="0.01" /></div>
-        <div><label>Seuil alerte</label><input id="nvSeuil" type="number" value="5" /></div>
-      </div>
-      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-primary" id="btnSaveVar">Ajouter la variante</button>
-        <button class="btn" id="btnCancelVar">Annuler</button>
       </div>
     </div>
 
@@ -103,14 +165,89 @@ async function renderProduits(el) {
                       Modifier
                     </button>
                     <button class="btn btn-sm" data-var="${p.id_produit}" data-nom="${(p.nom || '').replace(/"/g, '')}">+ Variante</button>
+                    ${peutSupprimer ? `<button class="btn btn-sm" style="color:var(--danger)" data-del-prod="${p.id_produit}" data-nom="${(p.nom || '').replace(/"/g, '')}">Supprimer</button>` : ''}
                   </td>` : ''}
                 </tr>`).join('')}
             </tbody>
           </table></div>`}
     </div>
+
+    <div class="panel" id="varFormPanel" style="display:none">
+      <div class="panel-title">Ajouter une variante — <span id="varProdName"></span></div>
+      <input type="hidden" id="varProdId" />
+      <div class="form-grid">
+        <div><label>Taille</label><input id="nvTaille" placeholder="L" /></div>
+        <div><label>Couleur</label><input id="nvCouleur" placeholder="Noir" /></div>
+        <div><label>Stock</label><input id="nvStock" type="number" value="0" /></div>
+        <div><label>Prix vente</label><input id="nvPrixV" type="number" step="0.01" /></div>
+        <div><label>Prix achat</label><input id="nvPrixA" type="number" step="0.01" /></div>
+        <div><label>Seuil alerte</label><input id="nvSeuil" type="number" value="5" /></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" id="btnSaveVar">Ajouter la variante</button>
+        <button class="btn" id="btnCancelVar">Annuler</button>
+      </div>
+    </div>
   `;
 
-  document.getElementById('btnRefreshProd')?.addEventListener('click', () => renderProduits(el));
+  
+  if (peutEcrire) {
+    loadMarqueCategorieSelects().catch(function () {});
+  }
+
+  document.getElementById('btnAddMarque')?.addEventListener('click', function () {
+    document.getElementById('marqueQuickPanel').style.display = 'block';
+    document.getElementById('catQuickPanel').style.display = 'none';
+  });
+  document.getElementById('btnCancelMarque')?.addEventListener('click', function () {
+    document.getElementById('marqueQuickPanel').style.display = 'none';
+  });
+  document.getElementById('btnSaveMarque')?.addEventListener('click', async function () {
+    try {
+      const nom = document.getElementById('mNom').value.trim();
+      if (!nom) return alert('Nom de marque obligatoire');
+      const row = await MarquesAPI.create({
+        nom: nom,
+        description: document.getElementById('mDesc').value.trim() || null,
+      });
+      document.getElementById('marqueQuickPanel').style.display = 'none';
+      document.getElementById('mNom').value = '';
+      document.getElementById('mDesc').value = '';
+      await loadMarqueCategorieSelects(row.id_marque, document.getElementById('pCat').value);
+      document.getElementById('prodFormPanel').style.display = 'block';
+      alert('Marque créée');
+    } catch (e) {
+      alert(e.message);
+    }
+  });
+
+  document.getElementById('btnAddCat')?.addEventListener('click', function () {
+    document.getElementById('catQuickPanel').style.display = 'block';
+    document.getElementById('marqueQuickPanel').style.display = 'none';
+  });
+  document.getElementById('btnCancelCat')?.addEventListener('click', function () {
+    document.getElementById('catQuickPanel').style.display = 'none';
+  });
+  document.getElementById('btnSaveCat')?.addEventListener('click', async function () {
+    try {
+      const nom = document.getElementById('cNom').value.trim();
+      if (!nom) return alert('Nom de catégorie obligatoire');
+      const row = await CategoriesAPI.create({
+        nom: nom,
+        description: document.getElementById('cDesc').value.trim() || null,
+      });
+      document.getElementById('catQuickPanel').style.display = 'none';
+      document.getElementById('cNom').value = '';
+      document.getElementById('cDesc').value = '';
+      await loadMarqueCategorieSelects(document.getElementById('pMarque').value, row.id_categorie);
+      document.getElementById('prodFormPanel').style.display = 'block';
+      alert('Catégorie créée');
+    } catch (e) {
+      alert(e.message);
+    }
+  });
+
+document.getElementById('btnRefreshProd')?.addEventListener('click', () => renderProduits(el));
   document.getElementById('prodSearch')?.addEventListener('input', (e) => {
     const q = e.target.value.toLowerCase();
     document.querySelectorAll('#prodTable tbody tr').forEach((tr) => {
@@ -220,6 +357,21 @@ async function renderProduits(el) {
       document.getElementById('varFormPanel').style.display = 'block';
       document.getElementById('prodFormPanel').style.display = 'none';
       document.getElementById('varFormPanel').scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  el.querySelectorAll('[data-del-prod]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.delProd;
+      const nom = btn.dataset.nom || id;
+      if (!confirm('Supprimer le produit « ' + nom + ' » ?\nIl sera déplacé dans la Corbeille (restauration possible).')) return;
+      try {
+        await ProduitsAPI.remove(id);
+        alert('Produit déplacé vers la corbeille');
+        renderProduits(el);
+      } catch (e) {
+        alert(e.message || String(e));
+      }
     });
   });
 

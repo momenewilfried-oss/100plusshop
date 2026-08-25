@@ -1,5 +1,7 @@
 async function renderClients(el) {
   const clients = await ClientsAPI.list();
+  const role = String((getUser() && getUser().role) || '').toLowerCase();
+  const peutSupprimer = role === 'administrateur';
 
   el.innerHTML = `
     <div class="toolbar">
@@ -24,7 +26,12 @@ async function renderClients(el) {
       ${clients.length === 0
         ? '<div class="empty">Aucun client</div>'
         : `<table class="data">
-            <thead><tr><th>ID</th><th>Nom</th><th>Email</th><th>Téléphone</th><th>Créé le</th></tr></thead>
+            <thead>
+              <tr>
+                <th>ID</th><th>Nom</th><th>Email</th><th>Téléphone</th><th>Créé le</th>
+                ${peutSupprimer ? '<th>Actions</th>' : ''}
+              </tr>
+            </thead>
             <tbody>
               ${clients.map(c => `
                 <tr>
@@ -33,6 +40,14 @@ async function renderClients(el) {
                   <td>${escapeHtml(c.email || '-')}</td>
                   <td>${escapeHtml(c.telephone || '-')}</td>
                   <td>${c.date_creation ? new Date(c.date_creation).toLocaleDateString('fr-FR') : '-'}</td>
+                  ${peutSupprimer ? `
+                  <td>
+                    <button type="button" class="btn btn-sm" style="color:var(--danger)"
+                      data-del-client="${c.id_client}"
+                      data-nom="${escapeHtml((c.prenom || '') + ' ' + (c.nom || '')).replace(/"/g, '')}">
+                      Supprimer
+                    </button>
+                  </td>` : ''}
                 </tr>`).join('')}
             </tbody>
           </table>`}
@@ -58,5 +73,20 @@ async function renderClients(el) {
     } catch (e) {
       alert(e.message);
     }
+  });
+
+  el.querySelectorAll('[data-del-client]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.delClient;
+      const nom = btn.dataset.nom || id;
+      if (!confirm('Supprimer le client « ' + nom + ' » ?\nIl sera déplacé dans la Corbeille si possible.')) return;
+      try {
+        await ClientsAPI.remove(id);
+        alert('Client supprimé (corbeille)');
+        renderClients(el);
+      } catch (e) {
+        alert(e.message || String(e));
+      }
+    });
   });
 }

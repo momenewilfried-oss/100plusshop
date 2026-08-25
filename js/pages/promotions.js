@@ -75,6 +75,13 @@ async function renderPromotions(el) {
     document.getElementById('promoForm').style.display = 'none';
   });
   document.getElementById('btnSavePromo')?.addEventListener('click', async () => {
+    const btn = document.getElementById('btnSavePromo');
+    if (btn && btn.dataset.busy === '1') return;
+    if (btn) { btn.dataset.busy = '1'; btn.disabled = true; }
+    const idempotencyKey =
+      (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : 'pro-' + Date.now() + '-' + Math.random().toString(36).slice(2);
     try {
       const vars = document.getElementById('pVars').value
         .split(',')
@@ -83,6 +90,7 @@ async function renderPromotions(el) {
       const debut = document.getElementById('pDebut').value;
       const fin = document.getElementById('pFin').value;
       await PromotionsAPI.create({
+        idempotencyKey,
         nom: document.getElementById('pNom').value.trim(),
         type: document.getElementById('pType').value,
         valeur: Number(document.getElementById('pVal').value),
@@ -94,6 +102,10 @@ async function renderPromotions(el) {
       renderPromotions(el);
     } catch (e) {
       alert(e.message);
+    } finally {
+      setTimeout(() => {
+        if (btn) { btn.dataset.busy = '0'; btn.disabled = false; }
+      }, 2000);
     }
   });
   el.querySelectorAll('[data-del]').forEach((btn) => {

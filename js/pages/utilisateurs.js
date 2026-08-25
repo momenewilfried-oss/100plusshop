@@ -25,9 +25,9 @@ async function renderUtilisateurs(el) {
     <div class="panel" id="userCreatePanel" style="display:none">
       <div class="panel-title">Nouvel utilisateur</div>
       <div class="form-grid">
-        <div><label>Nom *</label><input id="cNom" placeholder="Dupont" /></div>
-        <div><label>Prénom *</label><input id="cPrenom" placeholder="Marie" /></div>
-        <div><label>Email *</label><input id="cEmail" type="email" placeholder="marie@boutique.local" /></div>
+        <div><label>Nom *</label><input id="cNom" placeholder="onguene" /></div>
+        <div><label>Prénom *</label><input id="cPrenom" placeholder="Marc" /></div>
+        <div><label>Email *</label><input id="cEmail" type="email" placeholder="onguenemarc@gmail.com" /></div>
         <div><label>Téléphone</label><input id="cTel" placeholder="6XX XX XX XX" /></div>
         <div>
           <label>Rôle *</label>

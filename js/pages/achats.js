@@ -62,8 +62,16 @@ async function renderAchats(el) {
     document.getElementById('achatForm').style.display = 'none';
   });
   document.getElementById('btnSaveAchat')?.addEventListener('click', async () => {
+    const btn = document.getElementById('btnSaveAchat');
+    if (btn && btn.dataset.busy === '1') return;
+    if (btn) { btn.dataset.busy = '1'; btn.disabled = true; }
+    const idempotencyKey =
+      (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : 'ach-' + Date.now() + '-' + Math.random().toString(36).slice(2);
     try {
       await AchatsAPI.create({
+        idempotencyKey,
         idFournisseur: Number(document.getElementById('aFour').value),
         lignes: [{
           idVariante: Number(document.getElementById('aVar').value),
@@ -75,6 +83,10 @@ async function renderAchats(el) {
       renderAchats(el);
     } catch (e) {
       alert(e.message);
+    } finally {
+      setTimeout(() => {
+        if (btn) { btn.dataset.busy = '0'; btn.disabled = false; }
+      }, 2000);
     }
   });
 }
