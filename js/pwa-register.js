@@ -91,10 +91,6 @@
           if (!nw) return;
           nw.addEventListener('statechange', function () {
             if (nw.state === 'installed' && navigator.serviceWorker.controller) {
-<<<<<<< HEAD
-=======
-              // Pas d'auto-activation : l'utilisateur choisit
->>>>>>> 5ca99ebf5378572ec1043d1fa5ef8a142d8421d3
               showUpdateBanner(function () {
                 activateWaiting(reg);
               });
