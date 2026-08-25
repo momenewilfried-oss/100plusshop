@@ -18,15 +18,11 @@
 
   function dismissForSession() {
     try {
-<<<<<<< HEAD
+      // Masquer le bandeau pendant 6 heures dans cette session
       sessionStorage.setItem(
         DISMISS_KEY,
         String(Date.now() + 6 * 60 * 60 * 1000)
       );
-=======
-      // 6 heures dans cet onglet / session
-      sessionStorage.setItem(DISMISS_KEY, String(Date.now() + 6 * 60 * 60 * 1000));
->>>>>>> 5ca99ebf5378572ec1043d1fa5ef8a142d8421d3
     } catch (_) {}
   }
 
@@ -76,10 +72,7 @@
       .then(function (reg) {
         console.log('[PWA] SW enregistré', reg.scope);
 
-<<<<<<< HEAD
-=======
-        // Déjà une version en attente
->>>>>>> 5ca99ebf5378572ec1043d1fa5ef8a142d8421d3
+        // Version déjà en attente
         if (reg.waiting && navigator.serviceWorker.controller) {
           showUpdateBanner(function () {
             activateWaiting(reg);
@@ -98,10 +91,7 @@
           });
         });
 
-<<<<<<< HEAD
-=======
-        // Vérif au chargement uniquement (plus de spam)
->>>>>>> 5ca99ebf5378572ec1043d1fa5ef8a142d8421d3
+        // Vérification au chargement uniquement (pas de spam)
         reg.update().catch(function () {});
       })
       .catch(function (err) {
