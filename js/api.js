@@ -11,7 +11,7 @@ const API_BASE = (function () {
   if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
     return location.origin + '/api';
   }
-  return 'https://100plusshop-backend-pied.vercel.app';;
+  return 'https://100plusshop-backend-pied.vercel.app/api';;
 })();
 
 /**
