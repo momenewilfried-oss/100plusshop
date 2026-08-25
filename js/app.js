@@ -146,14 +146,15 @@ const titles = {
   achats: 'Achats fournisseurs',
   promotions: 'Promotions',
   utilisateurs: 'Utilisateurs',
-  journal: 'Journal d\'activité',
+  journal: "Journal d'activité",
   corbeille: 'Corbeille',
 };
 
-
 function enrichTablesForMobile(root) {
   root.querySelectorAll('table.data').forEach((table) => {
-    const headers = Array.from(table.querySelectorAll('thead th')).map((th) => th.textContent.trim());
+    const headers = Array.from(table.querySelectorAll('thead th')).map((th) =>
+      th.textContent.trim()
+    );
     table.querySelectorAll('tbody tr').forEach((tr) => {
       Array.from(tr.children).forEach((td, i) => {
         if (!td.getAttribute('data-label') && headers[i]) {
@@ -183,7 +184,6 @@ window.navigate = async function navigate(page) {
   document.getElementById('breadcrumb').textContent = titles[page] || page;
   const content = document.getElementById('pageContent');
   content.innerHTML = '<div class="loading-state">Chargement…</div>';
-  // Fermer uniquement le tiroir mobile (ne pas réduire la barre PC)
   if (isMobileNav()) {
     sidebar.classList.remove('open');
     overlay.classList.remove('visible');
@@ -206,7 +206,7 @@ document.querySelectorAll('.nav-item[data-page]').forEach((el) => {
 
 navigate('dashboard');
 
-/* --- PWA : bandeau hors ligne --- */
+/* --- PWA : bandeau hors ligne (moins agressif sur mobile) --- */
 (function setupOfflineBanner() {
   function ensureBanner() {
     var el = document.getElementById('offline-banner');
@@ -214,15 +214,31 @@ navigate('dashboard');
     el = document.createElement('div');
     el.id = 'offline-banner';
     el.setAttribute('role', 'status');
-    el.style.cssText = 'display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#b45309;color:#fff;text-align:center;padding:8px 12px;font-size:13px;font-weight:600;';
-    el.textContent = 'Mode hors ligne — interface disponible, les données serveur sont inaccessibles.';
+    el.style.cssText =
+      'display:none;position:fixed;top:0;left:0;right:0;z-index:9999;' +
+      'background:#b45309;color:#fff;text-align:center;padding:8px 12px;' +
+      'font-size:13px;font-weight:600;';
+    el.textContent =
+      'Connexion instable — certaines données serveur peuvent être inaccessibles.';
     document.body.prepend(el);
     return el;
   }
+
+  var offlineTimer = null;
+
   function sync() {
     var el = ensureBanner();
-    el.style.display = navigator.onLine ? 'none' : 'block';
+    if (!navigator.onLine) {
+      clearTimeout(offlineTimer);
+      offlineTimer = setTimeout(function () {
+        if (!navigator.onLine) el.style.display = 'block';
+      }, 2000);
+    } else {
+      clearTimeout(offlineTimer);
+      el.style.display = 'none';
+    }
   }
+
   window.addEventListener('online', sync);
   window.addEventListener('offline', sync);
   if (document.readyState === 'loading') {

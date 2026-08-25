@@ -1,7 +1,6 @@
-/* 100PLUSSHOP — Service Worker v7 (offline shell fiable en prod) */
-const CACHE_VERSION = '100plusshop-v7';
+/* 100PLUSSHOP — Service Worker v8 (stable prod) */
+const CACHE_VERSION = '100plusshop-v8';
 
-/** Tout le shell + pages : indispensable hors ligne */
 const PRECACHE = [
   './',
   './index.html',
@@ -14,6 +13,8 @@ const PRECACHE = [
   './js/pwa-register.js',
   './js/pages/dashboard.js',
   './js/pages/produits.js',
+  './js/pages/marques.js',
+  './js/pages/categories.js',
   './js/pages/ventes.js',
   './js/pages/clients.js',
   './js/pages/stocks.js',
@@ -39,11 +40,15 @@ self.addEventListener('install', (event) => {
       .then((cache) =>
         Promise.all(
           PRECACHE.map((url) =>
-            cache.add(url).catch((err) => console.warn('[SW] skip', url, err && err.message))
+            cache
+              .add(url)
+              .catch((err) =>
+                console.warn('[SW] skip', url, err && err.message)
+              )
           )
         )
       )
-      .then(() => self.skipWaiting())
+    // Pas de skipWaiting auto → évite les reloads en boucle
   );
 });
 
@@ -52,19 +57,25 @@ self.addEventListener('activate', (event) => {
     caches
       .keys()
       .then((keys) =>
-        Promise.all(keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k)))
+        Promise.all(
+          keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k))
+        )
       )
       .then(() => self.clients.claim())
   );
 });
 
 function isApiRequest(url) {
-  // Backend distant (Render/Railway/etc.) ou chemin /api
-  if (url.pathname.includes('/api/') || /\/api(\/|$)/.test(url.pathname)) return true;
+  if (url.pathname.includes('/api/') || /\/api(\/|$)/.test(url.pathname)) {
+    return true;
+  }
   if (url.port === '3000') return true;
-  // host API typiques
   const h = url.hostname || '';
-  if (/onrender\.com|railway\.app|fly\.dev|herokuapp\.com/i.test(h)) return true;
+  if (
+    /onrender\.com|railway\.app|fly\.dev|herokuapp\.com|vercel\.app/i.test(h)
+  ) {
+    return true;
+  }
   return false;
 }
 
@@ -82,7 +93,7 @@ function isStaticAsset(url) {
     p.endsWith('.svg') ||
     p.endsWith('.ico') ||
     p.endsWith('.webmanifest') ||
-    p.endsWith('sw.js') ||
+    p === '/' ||
     p.endsWith('/')
   );
 }
@@ -98,7 +109,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // API → réseau uniquement (pas de ventes hors ligne sans file d'attente locale)
+  if (url.pathname.endsWith('/sw.js') || url.pathname.endsWith('sw.js')) {
+    event.respondWith(fetch(req));
+    return;
+  }
+
   if (isApiRequest(url)) {
     event.respondWith(
       fetch(req).catch(
@@ -106,7 +121,7 @@ self.addEventListener('fetch', (event) => {
           new Response(
             JSON.stringify({
               message:
-                'Hors ligne : impossible de joindre le serveur. Les ventes et données live nécessitent Internet.',
+                'Serveur injoignable. Vérifiez votre connexion ou réessayez.',
               offline: true,
             }),
             { status: 503, headers: { 'Content-Type': 'application/json' } }
@@ -116,23 +131,39 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Fichiers de l'app : cache d'abord (fiable hors ligne), puis réseau en arrière-plan
+  if (
+    url.origin === self.location.origin &&
+    (url.pathname.endsWith('.html') || url.pathname.endsWith('/'))
+  ) {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (res && res.ok) {
+            const clone = res.clone();
+            caches.open(CACHE_VERSION).then((c) => c.put(req, clone));
+          }
+          return res;
+        })
+        .catch(() =>
+          caches.match(req).then((c) => c || caches.match('./app.html'))
+        )
+    );
+    return;
+  }
+
   if (isStaticAsset(url)) {
     event.respondWith(
       caches.match(req).then((cached) => {
         const networkFetch = fetch(req)
           .then((res) => {
-            if (res && res.ok && url.origin === self.location.origin) {
+            if (res && res.ok) {
               const clone = res.clone();
               caches.open(CACHE_VERSION).then((c) => c.put(req, clone));
             }
             return res;
           })
           .catch(() => cached);
-
-        // Si on a le cache → on répond tout de suite (offline OK)
         if (cached) {
-          // mise à jour silencieuse si online
           networkFetch.catch(() => {});
           return cached;
         }
@@ -142,7 +173,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Autre : réseau puis cache
   event.respondWith(
     fetch(req)
       .then((res) => {
@@ -157,5 +187,8 @@ self.addEventListener('fetch', (event) => {
 });
 
 self.addEventListener('message', (event) => {
-  if (event.data === 'SKIP_WAITING') self.skipWaiting();
+  const data = event.data;
+  if (data === 'SKIP_WAITING' || (data && data.type === 'SKIP_WAITING')) {
+    self.skipWaiting();
+  }
 });
