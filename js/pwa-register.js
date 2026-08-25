@@ -18,10 +18,15 @@
 
   function dismissForSession() {
     try {
+<<<<<<< HEAD
       sessionStorage.setItem(
         DISMISS_KEY,
         String(Date.now() + 6 * 60 * 60 * 1000)
       );
+=======
+      // 6 heures dans cet onglet / session
+      sessionStorage.setItem(DISMISS_KEY, String(Date.now() + 6 * 60 * 60 * 1000));
+>>>>>>> 5ca99ebf5378572ec1043d1fa5ef8a142d8421d3
     } catch (_) {}
   }
 
@@ -71,6 +76,10 @@
       .then(function (reg) {
         console.log('[PWA] SW enregistré', reg.scope);
 
+<<<<<<< HEAD
+=======
+        // Déjà une version en attente
+>>>>>>> 5ca99ebf5378572ec1043d1fa5ef8a142d8421d3
         if (reg.waiting && navigator.serviceWorker.controller) {
           showUpdateBanner(function () {
             activateWaiting(reg);
@@ -82,6 +91,10 @@
           if (!nw) return;
           nw.addEventListener('statechange', function () {
             if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+<<<<<<< HEAD
+=======
+              // Pas d'auto-activation : l'utilisateur choisit
+>>>>>>> 5ca99ebf5378572ec1043d1fa5ef8a142d8421d3
               showUpdateBanner(function () {
                 activateWaiting(reg);
               });
@@ -89,6 +102,10 @@
           });
         });
 
+<<<<<<< HEAD
+=======
+        // Vérif au chargement uniquement (plus de spam)
+>>>>>>> 5ca99ebf5378572ec1043d1fa5ef8a142d8421d3
         reg.update().catch(function () {});
       })
       .catch(function (err) {
